@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM --platform=linux/amd64 node:18-alpine AS builder
 
 # Define ALL build arguments based on your .env file
 ARG DATABASE_URL
@@ -17,8 +17,8 @@ ENV TWITTER_USERNAME=$TWITTER_USERNAME
 ENV TWITTER_PASSWORD=$TWITTER_PASSWORD
 ENV TELEGRAM_CHANNEL_ID=$TELEGRAM_CHANNEL_ID
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install build dependencies
+RUN apk add --no-cache python3 make g++ gcc
 
 WORKDIR /usr/src/app
 
@@ -29,7 +29,8 @@ COPY tsconfig.json ./
 COPY prisma ./prisma/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN npm install -g pnpm
+RUN pnpm install
 
 # Generate Prisma Client with specific schema path
 RUN pnpm prisma generate --schema=./prisma/schema.prisma
@@ -41,7 +42,7 @@ COPY src/ ./src/
 RUN pnpm run build
 
 # Production stage
-FROM node:18-alpine
+FROM --platform=linux/amd64 node:18-alpine
 
 # Define build arguments again for production stage
 ARG DATABASE_URL
@@ -59,8 +60,8 @@ ENV TWITTER_USERNAME=$TWITTER_USERNAME
 ENV TWITTER_PASSWORD=$TWITTER_PASSWORD
 ENV TELEGRAM_CHANNEL_ID=$TELEGRAM_CHANNEL_ID
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install production dependencies
+RUN apk add --no-cache python3 make g++ gcc
 
 WORKDIR /usr/src/app
 
@@ -70,8 +71,9 @@ COPY pnpm-lock.yaml ./
 COPY prisma ./prisma/
 
 # Install production dependencies and generate Prisma Client
-RUN pnpm install --prod --frozen-lockfile && \
-  pnpm prisma generate --schema=./prisma/schema.prisma
+RUN npm install -g pnpm
+RUN pnpm install --prod
+RUN pnpm prisma generate --schema=./prisma/schema.prisma
 
 # Copy built files from builder
 COPY --from=builder /usr/src/app/dist ./dist
