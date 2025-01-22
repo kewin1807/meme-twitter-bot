@@ -6,7 +6,7 @@ import { TExtractedToken, TFormattedResult, TPair } from "./types";
 require('dotenv').config()
 
 export const client = new OpenAI({
-  apiKey: process.env.XAI_API_KEY,
+  apiKey: process.env.XAI_API_KEY || '',
   baseURL: 'https://api.x.ai/v1'
 });
 

@@ -1,3 +1,4 @@
+require('dotenv').config()
 import twitterService from "./services/twitter.service";
 import prisma from './services/prisma.service';
 import { extractTweetFromGrok, formatResult, formatTelegramMessage, telegramBot } from "./utils";
