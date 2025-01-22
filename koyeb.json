@@ -1,0 +1,76 @@
+{
+  "name": "meme-twitter-bot",
+  "type": "WEB",
+  "strategy": {
+    "type": "DEPLOYMENT_STRATEGY_TYPE_ROLLING"
+  },
+  "routes": [
+    {
+      "port": 3000,
+      "path": "/"
+    }
+  ],
+  "ports": [
+    {
+      "port": 3000,
+      "protocol": "http"
+    }
+  ],
+  "env": [
+    {
+      "key": "NODE_ENV",
+      "value": "production"
+    },
+    {
+      "key": "DATABASE_URL",
+      "value": "from_secrets"
+    },
+    {
+      "key": "TELEGRAM_BOT_TOKEN",
+      "value": "from_secrets"
+    },
+    {
+      "key": "TELEGRAM_CHANNEL_ID",
+      "value": "from_secrets"
+    },
+    {
+      "key": "XAI_API_KEY",
+      "value": "from_secrets"
+    },
+    {
+      "key": "TWITTER_USERNAME",
+      "value": "from_secrets"
+    },
+    {
+      "key": "TWITTER_PASSWORD",
+      "value": "from_secrets"
+    },
+    {
+      "key": "TZ",
+      "value": "UTC"
+    }
+  ],
+  "regions": ["fra"],
+  "scalings": [
+    {
+      "scopes": ["region:fra"],
+      "min": 1,
+      "max": 1,
+      "targets": []
+    }
+  ],
+  "instance_types": [
+    {
+      "scopes": ["region:fra"],
+      "type": "free"
+    }
+  ],
+  "git": {
+    "repository": "github.com/kewin1807/meme-twitter-bot",
+    "branch": "main",
+    "no_deploy_on_push": false,
+    "docker": {
+      "dockerfile": "Dockerfile"
+    }
+  }
+}
