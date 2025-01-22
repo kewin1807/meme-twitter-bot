@@ -1,4 +1,3 @@
-require('dotenv').config()
 import express, { Request, Response } from 'express';
 import { authRouter } from "./routers";
 import TelegramBot from 'node-telegram-bot-api';
