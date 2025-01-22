@@ -118,7 +118,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
     });
     const content = response.choices[0].message.content?.trim() || '';
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
+    if (!jsonMatch || (JSON.parse(jsonMatch[0]).token === 'NO' && JSON.parse(jsonMatch[0]).contract === 'NO')) {
       // check if there is photos media
       if (tweet?.photos && tweet?.photos.length > 0) {
         const photoUrls = tweet.photos.map(item => item.url).join('\n');
@@ -159,6 +159,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
 
     }
     else {
+      console.log('jsonMatch', jsonMatch);
       const parsedResponse = JSON.parse(jsonMatch[0]);
       return parsedResponse;
     }
