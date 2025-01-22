@@ -10,7 +10,9 @@ export const client = new OpenAI({
   baseURL: 'https://api.x.ai/v1'
 });
 
-export const telegramBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '');
+export const telegramBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', { polling: true });
+
+// Add command to bot's menu
 
 const commonWords = new Set(['THE', 'AND', 'FOR', 'NEW', 'NOW', 'ALL', 'GET']);
 
