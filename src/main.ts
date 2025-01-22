@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { authRouter } from "./routers";
 import TelegramBot from 'node-telegram-bot-api';
 import { telegramBot } from "./utils"
-import { TelegramCommands } from './bot.handler';
+import telegramCommands from './bot.handler';
 
 
 const app = express();
@@ -31,6 +31,6 @@ app.listen(PORT, () => {
 
 console.log('Telegram bot initialized');
 
-// Initialize bot commands
-new TelegramCommands(telegramBot);
+// Initialize bot commands()
+telegramCommands.initializeCommands();
 console.log('Bot commands registered');

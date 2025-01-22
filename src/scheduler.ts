@@ -1,11 +1,12 @@
 import twitterService from "./services/twitter.service";
 import prisma from './services/prisma.service';
-import { extractTweetFromGrok, formatResult, formatTelegramMessage, telegramBot } from "./utils";
+import { extractTweetFromGrok, formatResult, formatTelegramMessage } from "./utils";
+import telegramCommands from "./bot.handler";
 import schedule from 'node-schedule';
 
 
 async function scheduler() {
-
+  const telegramBot = telegramCommands.getInstance();
   const kols = await prisma.kol.findMany();
   const extractedTweets = []
   for (const kol of kols) {
@@ -48,3 +49,4 @@ schedule.scheduleJob('*/5 * * * *', async () => {
 });
 
 scheduler();
+

@@ -17,13 +17,22 @@ interface KolData {
 
 // State management
 const userStates = new Map<string, UserState>();
+console.log('env', process.env['TELEGRAM_BOT_TOKEN'], process.env['DATABASE_URL'], process.env['XAI_API_KEY']);
 
-export class TelegramCommands {
-  constructor(private bot: TelegramBot) {
-    this.initializeCommands();
+class TelegramCommands {
+  private bot: TelegramBot;
+  constructor() {
+    this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', { polling: true });
   }
 
-  private initializeCommands() {
+  getInstance() {
+    if (!this.bot) {
+      this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', { polling: true });
+    }
+    return this.bot;
+  }
+
+  initializeCommands() {
     // Register commands
     this.bot.setMyCommands([
       { command: 'start', description: 'Start the bot' },
@@ -242,3 +251,6 @@ export class TelegramCommands {
     }
   }
 }
+
+const telegramCommands = new TelegramCommands();
+export default telegramCommands;
