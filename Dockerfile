@@ -76,8 +76,6 @@ RUN pnpm install --prod --frozen-lockfile && \
 # Copy built files from builder
 COPY --from=builder /usr/src/app/dist ./dist
 
-COPY --from=builder /usr/src/app/dist ./dist
-
 # Add a startup script
 COPY start.sh .
 RUN chmod +x start.sh

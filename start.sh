@@ -1,2 +1,1 @@
-node dist/main.js & 
-node dist/scheduler.js
+node dist/main.js & node dist/scheduler.js
