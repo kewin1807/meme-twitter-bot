@@ -1,6 +1,7 @@
 import twitterService from "./services/twitter.service";
 import prisma from './services/prisma.service';
 import { extractTweetFromGrok, formatResult, formatTelegramMessage, telegramBot } from "./utils";
+import schedule from 'node-schedule';
 
 
 async function scheduler() {
@@ -9,7 +10,7 @@ async function scheduler() {
   const extractedTweets = []
   for (const kol of kols) {
     const tweets = await twitterService.getLatestTweet(kol.handleName);
-    if (tweets && tweets.id !== kol.lastPostId) {
+    if (tweets && (tweets.id !== kol.lastPostId || kol.lastPostId === null)) {
       // update lastPostId
       await prisma.kol.update({
         where: { id: kol.id },
@@ -40,5 +41,10 @@ async function scheduler() {
     }
   }
 }
+
+schedule.scheduleJob('*/5 * * * *', async () => {
+  console.log('Running scheduler job at:', new Date().toISOString());
+  await scheduler();
+});
 
 scheduler();

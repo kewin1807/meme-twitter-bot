@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx ts-node-dev src/main.ts",
+    "dev": "concurrently \"npm run start\" \"npm run scheduler\"",
     "start:scheduler": "npx ts-node-dev src/scheduler.ts",
+    "start:main": "npx ts-node-dev src/main.ts",
     "build": "tsc",
-    "start": "node dist/main.js",
+    "start": "node dist/main.js && node dist/scheduler.js",
     "scheduler": "node dist/scheduler.js"
   },
   "keywords": [],
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
+    "@types/node-schedule": "^2.1.7",
     "@types/node-telegram-bot-api": "^0.64.7",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.2"
