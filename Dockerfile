@@ -9,13 +9,20 @@ RUN npm install -g pnpm
 
 # Copy dependency files
 COPY package*.json pnpm-lock.yaml ./
+COPY tsconfig.json ./
 COPY prisma ./prisma/
 
-# Install all dependencies (including devDependencies)
+# Install all dependencies
 RUN pnpm install
+
+# Copy source code
+COPY src/ ./src/
 
 # Generate Prisma Client
 RUN pnpm prisma generate
+
+# Build TypeScript
+RUN pnpm build
 
 # Production stage
 FROM node:18-alpine
@@ -39,20 +46,20 @@ WORKDIR /app
 
 # Install production dependencies
 RUN apk add --no-cache python3 make g++ gcc
-RUN npm install -g pnpm ts-node typescript
+RUN npm install -g pnpm
 
 # Copy package files and install production dependencies
 COPY package*.json pnpm-lock.yaml ./
-COPY tsconfig.json ./
 COPY prisma ./prisma/
 RUN pnpm install --prod
 
-# Generate Prisma Client in production
-RUN pnpm prisma generate
+# Copy built files from builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-# Copy source code
-COPY src/ ./src/
+# Create start script for running both processes
+RUN echo '#!/bin/sh\nnode dist/main.js & node dist/scheduler.js & wait' > start.sh
+RUN chmod +x start.sh
 
-
-
-CMD ["pnpm", "start:main"]
+CMD ["node", "dist/main.js"]
