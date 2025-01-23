@@ -95,7 +95,7 @@ class TelegramCommands {
       }
 
       const message = '📋 List of KOLs:\n\n' +
-        kols.map((kol, index) =>
+        kols.map((kol: any, index: number) =>
           `${index + 1}. @${kol.handleName}\n`
         ).join('\n\n');
 
@@ -129,7 +129,7 @@ class TelegramCommands {
       });
 
       const message = '🗑️ Select KOLs to delete by entering their numbers:\n\n' +
-        kols.map((kol, index) =>
+        kols.map((kol: any, index: number) =>
           `${index + 1}.@${kol.handleName} `
         ).join('\n');
 
@@ -190,13 +190,13 @@ class TelegramCommands {
         })
       );
 
-      const successfulKols = createdKols.filter(kol => kol !== null);
+      const successfulKols = createdKols.filter((kol: any) => kol !== null);
 
       if (successfulKols.length > 0) {
         await this.bot.sendMessage(
           chatId,
           `✅ Successfully added ${successfulKols.length} KOLs: \n` +
-          successfulKols.map(kol => `- @${kol?.handleName} `).join('\n')
+          successfulKols.map((kol: any) => `- @${kol?.handleName} `).join('\n')
         );
       } else {
         await this.bot.sendMessage(chatId, '❌ Failed to add any KOLs. Please try again.');

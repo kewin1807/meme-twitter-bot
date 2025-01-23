@@ -17,13 +17,15 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.2.1",
-    "agent-twitter-client": "^0.0.18",
+    "agent-twitter-client": "github:timmyg/agent-twitter-client#main",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "node-schedule": "^2.1.1",
     "node-telegram-bot-api": "^0.66.0",
     "openai": "^4.79.1",
-    "prisma": "^6.2.1",
+    "prisma": "^6.2.1"
+  },
+  "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
     "@types/node-schedule": "^2.1.7",

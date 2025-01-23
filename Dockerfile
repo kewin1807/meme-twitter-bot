@@ -1,9 +1,9 @@
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies and pnpm
 RUN apk add --no-cache python3 make g++ gcc
 RUN npm install -g pnpm
 
@@ -25,7 +25,7 @@ RUN pnpm prisma generate
 RUN pnpm build
 
 # Production stage
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Define environment variables
 ARG DATABASE_URL
@@ -44,22 +44,16 @@ ENV TELEGRAM_CHANNEL_ID=$TELEGRAM_CHANNEL_ID
 
 WORKDIR /app
 
-# Install production dependencies
+# Install production dependencies and pnpm
 RUN apk add --no-cache python3 make g++ gcc
 RUN npm install -g pnpm
 
 # Copy package files and install production dependencies
 COPY package*.json pnpm-lock.yaml ./
 COPY prisma ./prisma/
-RUN pnpm install --prod
+RUN pnpm install
 
 # Copy built files from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.pnpm/@prisma+client@*/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-
-# Create start script for running both processes
-RUN echo '#!/bin/sh\nnode dist/main.js & node dist/scheduler.js & wait' > start.sh
-RUN chmod +x start.sh
 
 CMD ["node", "dist/main.js"]
