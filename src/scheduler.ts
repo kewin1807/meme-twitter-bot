@@ -10,6 +10,7 @@ async function scheduler() {
   const kols = await prisma.kol.findMany();
   const extractedTweets = []
   for (const kol of kols) {
+    console.log(`Getting latest tweet for ${kol.handleName}`);
     const tweets = await twitterService.getLatestTweet(kol.handleName);
     if (tweets && (tweets.id !== kol.lastPostId || kol.lastPostId === null)) {
       // update lastPostId
@@ -22,6 +23,7 @@ async function scheduler() {
   }
 
   for (const tweet of extractedTweets) {
+    console.log(`Extracting tweet id: ${tweet.tweet.id}`);
     const result = await extractTweetFromGrok(tweet.tweet);
     const formattedResult = await formatResult(result);
     if (result.token || result.contract) {
