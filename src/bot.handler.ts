@@ -26,9 +26,6 @@ class TelegramCommands {
   }
 
   getInstance() {
-    if (!this.bot) {
-      this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', { polling: true });
-    }
     return this.bot;
   }
 

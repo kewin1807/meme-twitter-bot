@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"npm run start\" \"npm run scheduler\"",
     "start:scheduler": "npx ts-node-dev src/scheduler.ts",
-    "start:main": "npx ts-node-dev src/main.ts && npx ts-node-dev src/test.ts",
+    "start:main": "npx ts-node-dev src/main.ts && npx ts-node-dev src/scheduler.ts",
     "build": "tsc",
     "start": "node dist/main.js && node dist/scheduler.js",
     "scheduler": "node dist/scheduler.js"
