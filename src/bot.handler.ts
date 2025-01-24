@@ -94,10 +94,10 @@ class TelegramCommands {
         return;
       }
 
-      const message = '📋 List of KOLs:\n\n' +
+      const message = '📋 List of KOLs:\n' +
         kols.map((kol: any, index: number) =>
           `${index + 1}. @${kol.handleName}\n`
-        ).join('\n\n');
+        ).join('\n');
 
       await this.bot.sendMessage(chatId, message);
     } catch (error) {
@@ -246,6 +246,13 @@ class TelegramCommands {
     } finally {
       userStates.delete(userId);
     }
+  }
+
+  async sendMessage(chatId: string, message: string) {
+    await this.bot.sendMessage(chatId, message, {
+      parse_mode: 'MarkdownV2',
+      disable_web_page_preview: true
+    });
   }
 }
 

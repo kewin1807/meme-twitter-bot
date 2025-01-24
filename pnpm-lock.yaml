@@ -2516,7 +2516,6 @@ packages:
     resolution: {tarball: https://codeload.github.com/timmyg/agent-twitter-client/tar.gz/37445059ddc96d0504de7ca9e37b856c28e6fa40}
     name: agent-twitter-client
     version: 0.0.18
-    prepare: true
     requiresBuild: true
     dependencies:
       '@sinclair/typebox': 0.32.35

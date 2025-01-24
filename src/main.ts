@@ -21,7 +21,6 @@ app.listen(PORT, () => {
 
 
 async function scheduler() {
-  const telegramBot = telegramCommands.getInstance();
   const kols = await prisma.kol.findMany();
   const extractedTweets = []
   for (const kol of kols) {
@@ -48,10 +47,7 @@ async function scheduler() {
         formattedResult.summary = result.summary || tweet.tweet.text;
         try {
           const telegramMessage = formatTelegramMessage(formattedResult);
-          await telegramBot.sendMessage(process.env.TELEGRAM_CHANNEL_ID || '', telegramMessage, {
-            parse_mode: 'MarkdownV2',
-            disable_web_page_preview: true
-          });
+          await telegramCommands.sendMessage(process.env.TELEGRAM_CHANNEL_ID || '', telegramMessage);
         } catch (error) {
           console.error(error);
         }

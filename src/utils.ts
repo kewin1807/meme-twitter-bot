@@ -1,5 +1,4 @@
 import { Tweet } from "agent-twitter-client";
-import TelegramBot from "node-telegram-bot-api";
 import OpenAI from "openai";
 import { TExtractedToken, TFormattedResult, TPair } from "./types";
 
@@ -8,7 +7,6 @@ export const client = new OpenAI({
   baseURL: 'https://api.x.ai/v1'
 });
 
-export const telegramBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '8169785811:AAHTy1zxN_woh_DdBd9O5YH7o-9R6gX6dAY', { polling: true });
 
 // Add command to bot's menu
 
