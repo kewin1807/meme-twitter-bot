@@ -22,7 +22,7 @@ class TwitterService {
 
   async getLatestTweet(handleName: string): Promise<Tweet | null | void> {
     try {
-      await this.ensureLogin();
+      // await this.ensureLogin();
       const tweet = await this.client.getLatestTweet(handleName, false, 1);
       return tweet;
     } catch (error) {
@@ -33,7 +33,7 @@ class TwitterService {
 
   async getTweetById(id: string): Promise<Tweet | null | void> {
     try {
-      await this.ensureLogin();
+      // await this.ensureLogin();
       const tweet = await this.client.getTweet(id);
       return tweet;
     } catch (error) {
