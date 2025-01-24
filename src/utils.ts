@@ -109,12 +109,42 @@ export async function extractAndVerifyTokenFromText(text: string): Promise<TExtr
 
 export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToken> {
   try {
+    const tweetUrl = tweet.permanentUrl;
+    console.log('tweetUrl', tweetUrl);
     const response = await client.chat.completions.create({
-      model: "grok-2-vision-latest",
-      messages: [{ role: "user", content: `What is the token or token contract that is mentioned in this tweet? ${tweet?.text}. Please response the name or ticker of token and the summary of token follow the format: {"token": "BTC", "summary": "Bitcoin is a cryptocurrency.", "contract": "0x1234567890"}. If there is no token and token contract, please response {"token": "NO", "summary": "NO", "contract": "NO"}.` }],
-      max_tokens: 200,
+      model: "grok-2-latest",
+      messages: [{
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `You are a crypto token detector. Analyze this tweet thoroughly: ${tweetUrl}
+
+Your task:
+1. Find any token symbols, names, or contract addresses mentioned
+
+Tweet text: ${tweet.text}
+
+Format your response as JSON:
+{
+  "token": "<token symbol or NO>",
+  "summary": "<brief description including price, market cap if found, or NO>",
+  "contract": "<contract address or NO>"
+}
+
+Examples:
+{"token": "TOSHI", "summary": "TOSHI token mentioned with price movement", "contract": "0x..."}
+{"token": "NO", "summary": "NO", "contract": "NO"}`
+          }
+        ]
+      }],
+      max_tokens: 500,
+      temperature: 0.3, // Lower temperature for more focused responses
     });
+
     const content = response.choices[0].message.content?.trim() || '';
+
+    // If no valid JSON found, try text analysis
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch || (JSON.parse(jsonMatch[0]).token === 'NO' && JSON.parse(jsonMatch[0]).contract === 'NO')) {
       // check if there is photos media
