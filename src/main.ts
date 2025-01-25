@@ -39,6 +39,7 @@ async function scheduler() {
   for (const tweet of extractedTweets) {
     console.log(`Extracting tweet id: ${tweet.tweet.id}`);
     const result = await extractTweetFromGrok(tweet.tweet);
+    console.log('result tweet', result);
     const formattedResult = await formatResult(result);
     if (result.token || result.contract) {
       if (formattedResult) {
@@ -49,7 +50,7 @@ async function scheduler() {
           const telegramMessage = formatTelegramMessage(formattedResult);
           await telegramCommands.sendMessage(process.env.TELEGRAM_CHANNEL_ID || '', telegramMessage);
         } catch (error) {
-          console.error(error);
+          console.error("send message error", error);
         }
       }
     }

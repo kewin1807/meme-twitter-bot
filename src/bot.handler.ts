@@ -17,12 +17,25 @@ interface KolData {
 
 // State management
 const userStates = new Map<string, UserState>();
-console.log('env', process.env['TELEGRAM_BOT_TOKEN'], process.env['DATABASE_URL'], process.env['XAI_API_KEY']);
 
 class TelegramCommands {
   private bot: TelegramBot;
   constructor() {
-    this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', { polling: true });
+    this.bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', {
+      polling: {
+        interval: 300,
+        autoStart: true,
+        params: {
+          timeout: 10,
+        },
+      },
+    });
+    this.bot.on('polling_error', (error) => {
+      console.error('Polling error:', error);
+      if (error.message.includes('ECONNRESET')) {
+        this.restartBot();
+      }
+    });
   }
 
   getInstance() {
@@ -47,6 +60,18 @@ class TelegramCommands {
     // Setup conversation handler
     this.bot.on('text', this.handleConversation.bind(this));
   }
+
+  private restartBot() {
+    try {
+      this.bot.stopPolling();
+      setTimeout(() => {
+        this.bot.startPolling();
+      }, 5000);
+    } catch (error) {
+      console.error('Error restarting bot:', error);
+    }
+  }
+
 
   // Start Command
   private async handleStart(msg: TelegramBot.Message) {
@@ -249,10 +274,24 @@ class TelegramCommands {
   }
 
   async sendMessage(chatId: string, message: string) {
-    await this.bot.sendMessage(chatId, message, {
-      parse_mode: 'MarkdownV2',
-      disable_web_page_preview: true
-    });
+    try {
+      await this.bot.sendMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Retry once on failure
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await this.bot.sendMessage(chatId, message, {
+          parse_mode: 'Markdown',
+          disable_web_page_preview: true
+        });
+      } catch (retryError) {
+        console.error('Retry failed:', retryError);
+      }
+    }
   }
 }
 
