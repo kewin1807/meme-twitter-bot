@@ -26,7 +26,7 @@ async function scheduler() {
   for (const kol of kols) {
     console.log(`Getting latest tweet for ${kol.handleName}`);
     const tweets = await twitterService.getLatestTweet(kol.handleName);
-    if (tweets && (tweets.id !== kol.lastPostId || kol.lastPostId === null)) {
+    if (tweets && (tweets.id !== kol.lastPostId || !kol.lastPostId)) {
       // update lastPostId
       await prisma.kol.update({
         where: { id: kol.id },
