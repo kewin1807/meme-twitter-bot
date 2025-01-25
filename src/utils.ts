@@ -207,6 +207,9 @@ export async function formatResult(result: TExtractedToken): Promise<TFormattedR
   if (!result.token && !result.contract) {
     return null;
   }
+  if (result.token === 'NO' && result.contract === 'NO') {
+    return null;
+  }
 
   const tokenInfo = await verifyTokenWithDexscreener(result.token?.replace('$', '') || result.contract || '');
   if (!tokenInfo) {

@@ -262,7 +262,7 @@ class TelegramCommands {
       await this.bot.sendMessage(
         chatId,
         `✅ Successfully deleted ${kolsToDelete.length} KOLs: \n` +
-        kolsToDelete.map(kol => `- @${kol.username} `).join('\n')
+        kolsToDelete.map(kol => `- @${kol.handleName} `).join('\n')
       );
     } catch (error) {
       console.error('Error in delete KOL response:', error);

@@ -23,7 +23,7 @@ class TwitterService {
   async getLatestTweet(handleName: string): Promise<Tweet | null | void> {
     try {
       // await this.ensureLogin();
-      const tweet = await this.client.getLatestTweet(handleName, false, 1);
+      const tweet = await this.client.getLatestTweet(handleName);
       return tweet;
     } catch (error) {
       console.error(error);
