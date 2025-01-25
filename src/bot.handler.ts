@@ -31,7 +31,6 @@ class TelegramCommands {
       },
     });
     this.bot.on('polling_error', (error) => {
-      console.error('Polling error:', error);
       if (error.message.includes('ECONNRESET')) {
         this.restartBot();
       }
