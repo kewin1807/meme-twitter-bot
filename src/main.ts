@@ -57,7 +57,7 @@ async function scheduler() {
   }
 }
 
-schedule.scheduleJob('*/5 * * * *', async () => {
+schedule.scheduleJob('*/1 * * * *', async () => {
   console.log('Running scheduler job at:', new Date().toISOString());
   await scheduler();
 });
