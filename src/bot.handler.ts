@@ -102,7 +102,7 @@ class TelegramCommands {
       await this.bot.sendMessage(chatId, message);
     } catch (error) {
       console.error('Error fetching KOLs:', error);
-      await this.bot.sendMessage(chatId, '❌ Error fetching KOL list. Please try again.');
+      // await this.bot.sendMessage(chatId, '❌ Error fetching KOL list. Please try again.');
     }
   }
 
@@ -133,7 +133,7 @@ class TelegramCommands {
       await this.bot.sendMessage(chatId, message + '\n\nExample: 1,3,5');
     } catch (error) {
       console.error('Error in delete command:', error);
-      await this.bot.sendMessage(chatId, '❌ An error occurred. Please try again.');
+      // await this.bot.sendMessage(chatId, '❌ An error occurred. Please try again.');
     }
   }
 
@@ -249,7 +249,7 @@ class TelegramCommands {
   async sendMessage(chatId: string, message: string) {
     try {
       await this.bot.sendMessage(chatId, message, {
-        parse_mode: 'Markdown',
+        parse_mode: 'MarkdownV2',
         disable_web_page_preview: true
       });
     } catch (error) {

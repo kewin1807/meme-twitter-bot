@@ -107,6 +107,28 @@ export async function extractAndVerifyTokenFromText(text: string): Promise<TExtr
   };
 }
 
+function extractJSONFromString(text: string): any {
+  try {
+    // Try to find JSON object in the text
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+
+    // Clean the matched JSON string
+    const jsonString = jsonMatch[0]
+      .replace(/[\u201C\u201D]/g, '"') // Replace curly quotes with straight quotes
+      .replace(/[\n\r]/g, ' ') // Replace newlines with spaces
+      .replace(/,\s*}/g, '}') // Remove trailing commas
+      .replace(/,\s*]/g, ']') // Remove trailing commas in arrays
+      .trim();
+
+    // Parse the cleaned JSON
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error('Error parsing JSON:', error);
+    return null;
+  }
+}
+
 export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToken> {
   try {
     const tweetUrl = tweet.permanentUrl;
@@ -122,8 +144,6 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
 
 Your task:
 1. Find any token symbols, names, or contract addresses mentioned
-
-Tweet text: ${tweet.text}
 
 Format your response as JSON:
 {
@@ -144,61 +164,24 @@ Examples:
 
     const content = response.choices[0].message.content?.trim() || '';
 
-    // If no valid JSON found, try text analysis
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch || (JSON.parse(jsonMatch[0]).token === 'NO' && JSON.parse(jsonMatch[0]).contract === 'NO')) {
-      // check if there is photos media
-      if (tweet?.photos && tweet?.photos.length > 0) {
-        const photoUrls = tweet.photos.map(item => item.url).join('\n');
-        const responsePhoto = await client.chat.completions.create({
-          model: "grok-2-vision-latest",
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: `What is the token or token contract that is mentioned in this image?. Please response the name or ticker of token and the summary of token follow the format: {"token": "BTC", "summary": "Bitcoin is a cryptocurrency.", "contract": "0x1234567890"}. If there is no token and token contract, please response {"token": "NO", "summary": "NO", "contract": "NO"}.`
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: photoUrls,
-                    detail: "high"
-                  }
-                }
-              ],
-            }
-          ],
-          max_tokens: 200,
-        });
-        const content = responsePhoto.choices[0].message.content?.trim() || '';
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsedResponse = JSON.parse(jsonMatch[0]);
-          return parsedResponse;
-        }
-
-
-      }
-
-      const response = await extractAndVerifyTokenFromText(tweet?.text || '');
-      return response;
-
+    // Try to extract and parse JSON
+    const parsedJson = extractJSONFromString(content);
+    if (parsedJson) {
+      return parsedJson;
     }
-    else {
-      console.log('jsonMatch', jsonMatch);
-      const parsedResponse = JSON.parse(jsonMatch[0]);
-      return parsedResponse;
-    }
-  }
-  catch (error) {
+
+    // Fallback to text analysis if JSON parsing fails
+    return {
+      token: undefined,
+      contract: undefined,
+      summary: content
+    };
+  } catch (error) {
     console.error('Grok extraction failed:', error);
     return {
-      token: '',
-      contract: '',
-      summary: '',
-      error: 'Grok extraction failed'
+      token: undefined,
+      contract: undefined,
+      summary: tweet.text
     };
   }
 }
@@ -274,21 +257,21 @@ export function formatAge(timestamp: number): string {
 
 
 export function formatTelegramMessage(result: any) {
-  // Escape special characters for Telegram MarkdownV2
+  // Escape special characters for Markdown (not MarkdownV2)
   const escape = (text: string) => {
     if (!text) return '';
-    return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&');
+    return text.replace(/[_*[\]()]/g, '\\$&');
   };
 
-  // Escape numbers with dots (like 1.23M)
-  const escapeNumber = (num: number) => {
+  // Format numbers without escaping dots
+  const formatNum = (num: number) => {
     if (!num) return '0';
-    return formatNumber(num).replace(/\./g, '\\.');
+    return formatNumber(num);
   };
 
   return `
 🔔 *New Token Mention*
-👤 Mentioned by: [${escape(result.mentioned_by)}](https://twitter\\.com/${escape(result.mentioned_by)})
+👤 Mentioned by: @${result.mentioned_by}
 
 📝 *Summary*
 ${escape(result.summary)}
@@ -296,15 +279,15 @@ ${escape(result.summary)}
 🪙 *Token Info*
 • Name: ${escape(result.token_info?.name)}
 • Symbol: $${escape(result.token_info?.symbol)}
-• Contract: \`${escape(result.token_info?.address)}\`
-${result.token_info?.fdv ? `• FDV: $${escapeNumber(result.token_info.fdv)}` : ''}
-${result.token_info?.volume?.h24 ? `• 24h Volume: $${escapeNumber(result.token_info.volume.h24)}` : ''}
-${result.token_info?.pair_created_at ? `• Age: ${escape(formatAge(result.token_info.pair_created_at))}` : ''}
+• Contract: \`${result.token_info?.address}\`
+${result.token_info?.fdv ? `• FDV: $${formatNum(result.token_info.fdv)}` : ''}
+${result.token_info?.volume?.h24 ? `• 24h Volume: $${formatNum(result.token_info.volume.h24)}` : ''}
+${result.token_info?.pair_created_at ? `• Age: ${formatAge(result.token_info.pair_created_at)}` : ''}
 
 🔗 *Links*
-• [Post](${escape(result?.post_link_url)})
-${result?.token_info?.social_link ? `• [Social](${escape(result?.token_info?.social_link)})` : ''}
-${result?.token_info?.dexscreen_link ? `• [Chart](${escape(result?.token_info?.dexscreen_link)})` : ''}
-${result?.token_info?.trojan_link ? `• [Buy Now](${escape(result?.token_info?.trojan_link)})` : ''}
+• [Post](${result?.post_link_url})
+${result?.token_info?.social_link ? `• [Social](${result?.token_info?.social_link})` : ''}
+${result?.token_info?.dexscreen_link ? `• [Chart](${result?.token_info?.dexscreen_link})` : ''}
+${result?.token_info?.trojan_link ? `• [Buy Now](${result?.token_info?.trojan_link})` : ''}
 `.trim();
 }

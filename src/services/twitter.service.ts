@@ -4,7 +4,7 @@ require('dotenv').config()
 class TwitterService {
   private client: Scraper;
   private lastLoginTime: number;
-  private readonly LOGIN_TIMEOUT = 3600000; // 1 hour in milliseconds
+  private readonly LOGIN_TIMEOUT = 3600000 * 24; // 1 hour in milliseconds
 
 
   constructor() {
@@ -33,7 +33,7 @@ class TwitterService {
 
   async getTweetById(id: string): Promise<Tweet | null | void> {
     try {
-      // await this.ensureLogin();
+      await this.ensureLogin();
       const tweet = await this.client.getTweet(id);
       return tweet;
     } catch (error) {
