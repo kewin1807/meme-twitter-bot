@@ -20,6 +20,7 @@
     "agent-twitter-client": "github:timmyg/agent-twitter-client#main",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "mongodb": "^6.12.0",
     "node-schedule": "^2.1.1",
     "node-telegram-bot-api": "^0.66.0",
     "openai": "^4.79.1",
@@ -30,7 +31,7 @@
     "@types/node": "^22.10.5",
     "@types/node-schedule": "^2.1.7",
     "@types/node-telegram-bot-api": "^0.64.7",
-    "typescript": "^5.7.2",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.7.2"
   }
 }

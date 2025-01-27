@@ -15,14 +15,14 @@ class TwitterService {
   async ensureLogin(): Promise<void> {
     const now = Date.now();
     if (now - this.lastLoginTime > this.LOGIN_TIMEOUT) {
-      await this.client.login(process.env['TWITTER_USERNAME'] || '', process.env['TWITTER_PASSWORD'] || '');
+      await this.client.login(process.env['TWITTER_USERNAME'] || '', process.env['TWITTER_PASSWORD'] || '', process.env['TWITTER_EMAIL'] || '', process.env['TWITTER_TWO_FACTOR_SECRET'] || '');
       this.lastLoginTime = now;
     }
   }
 
   async getLatestTweet(handleName: string): Promise<Tweet | null | void> {
     try {
-      // await this.ensureLogin();
+      await this.ensureLogin();
       const tweet = await this.client.getLatestTweet(handleName);
       return tweet;
     } catch (error) {

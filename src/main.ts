@@ -1,12 +1,12 @@
 import twitterService from "./services/twitter.service";
-import prisma from './services/prisma.service';
+import mongodb from "./services/mongodb.service";
 import { extractTweetFromGrok, formatResult, formatTelegramMessage } from "./utils";
 import telegramCommands from "./bot.handler";
 import schedule from 'node-schedule';
 import express, { Request, Response } from 'express';
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 app.use(express.json());
 
@@ -21,17 +21,15 @@ app.listen(PORT, () => {
 
 
 async function scheduler() {
-  const kols = await prisma.kol.findMany();
+  await mongodb.connect();
+  const kols = await mongodb.findAllKOLs();
   const extractedTweets = []
   for (const kol of kols) {
     console.log(`Getting latest tweet for ${kol.handleName}`);
     const tweets = await twitterService.getLatestTweet(kol.handleName);
     if (tweets && (tweets.id !== kol.lastPostId || !kol.lastPostId)) {
       // update lastPostId
-      await prisma.kol.update({
-        where: { id: kol.id },
-        data: { lastPostId: tweets.id }
-      });
+      await mongodb.updateLastPostId(kol._id!, tweets.id || '');
       extractedTweets.push({ kol_name: kol.handleName, tweet: tweets });
     }
   }
@@ -57,7 +55,7 @@ async function scheduler() {
   }
 }
 
-schedule.scheduleJob('*/1 * * * *', async () => {
+schedule.scheduleJob('*/2 * * * *', async () => {
   console.log('Running scheduler job at:', new Date().toISOString());
   await scheduler();
 });
@@ -68,5 +66,4 @@ console.log('Telegram bot initialized');
 telegramCommands.initializeCommands();
 console.log('Bot commands registered');
 
-scheduler();
 
