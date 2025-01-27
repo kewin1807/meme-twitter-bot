@@ -254,10 +254,11 @@ export function formatAge(timestamp: number): string {
 
 
 export function formatTelegramMessage(result: any) {
-  // Escape special characters for Markdown (not MarkdownV2)
+  // Escape special characters for Markdown
   const escape = (text: string) => {
     if (!text) return '';
-    return text.replace(/[_*[\]()]/g, '\\$&');
+    // Escape special characters: _ * [ ] ( ) ~ ` > # + - = | { } . !
+    return text.replace(/[-_*[\]()~`>#+=|{}.!]/g, '\\$&');
   };
 
   // Format numbers without escaping dots
