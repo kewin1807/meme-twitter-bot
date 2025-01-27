@@ -33,7 +33,7 @@ class TwitterService {
 
   async getTweetById(id: string): Promise<Tweet | null | void> {
     try {
-      await this.ensureLogin();
+      // await this.ensureLogin();
       const tweet = await this.client.getTweet(id);
       return tweet;
     } catch (error) {

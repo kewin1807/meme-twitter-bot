@@ -140,8 +140,8 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
         content: [
           {
             type: "text",
-            text: `You are a crypto token detector. Analyze this tweet thoroughly: ${tweetUrl}
-
+            text: `You are a crypto token detector. Depending on your crypto knowledge, analyze this tweet thoroughly: ${tweetUrl}
+and the tweet text: ${tweet.text}
 Your task:
 1. Find any token symbols, names, or contract addresses mentioned
 
@@ -166,16 +166,13 @@ Examples:
 
     // Try to extract and parse JSON
     const parsedJson = extractJSONFromString(content);
-    if (parsedJson) {
+    if (parsedJson && parsedJson.token !== 'NO') {
       return parsedJson;
+    } else {
+      const result = await extractAndVerifyTokenFromText(tweet.text || '');
+      return result;
     }
 
-    // Fallback to text analysis if JSON parsing fails
-    return {
-      token: undefined,
-      contract: undefined,
-      summary: content
-    };
   } catch (error) {
     console.error('Grok extraction failed:', error);
     return {
