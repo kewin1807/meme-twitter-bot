@@ -1,6 +1,5 @@
 import twitterService from "./services/twitter.service";
-import mongodb from "./services/mongodb.service";
-import { extractTweetFromGrok, formatResult, formatTelegramMessage } from "./utils";
+import storage from "./services/storage.service"; import { extractTweetFromGrok, formatResult, formatTelegramMessage } from "./utils";
 import telegramCommands from "./bot.handler";
 import schedule from 'node-schedule';
 import express, { Request, Response } from 'express';
@@ -21,15 +20,14 @@ app.listen(PORT, () => {
 
 
 async function scheduler() {
-  await mongodb.connect();
-  const kols = await mongodb.findAllKOLs();
+  const kols = await storage.findAllKOLs();
   const extractedTweets = []
   for (const kol of kols) {
     console.log(`Getting latest tweet for ${kol.handleName}`);
     const tweets = await twitterService.getLatestTweet(kol.handleName);
     if (tweets && (tweets.id !== kol.lastPostId || !kol.lastPostId)) {
       // update lastPostId
-      await mongodb.updateLastPostId(kol._id!, tweets.id || '');
+      await storage.updateLastPostId(kol._id!, tweets.id || '');
       extractedTweets.push({ kol_name: kol.handleName, tweet: tweets });
     }
   }

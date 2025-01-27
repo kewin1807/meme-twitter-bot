@@ -89,5 +89,3 @@ class MongoDBService {
     return result.modifiedCount > 0;
   }
 }
-
-export default MongoDBService.getInstance(); 

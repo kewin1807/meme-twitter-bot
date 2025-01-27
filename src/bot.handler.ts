@@ -1,5 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
-import mongodb from './services/mongodb.service';
+import storage from './services/storage.service';
 
 // Types
 interface UserState {
@@ -31,7 +31,6 @@ class TelegramCommands {
     });
 
     // Initialize MongoDB connection
-    mongodb.connect().catch(console.error);
   }
 
   getInstance() {
@@ -88,7 +87,7 @@ class TelegramCommands {
     const chatId = msg.chat.id;
 
     try {
-      const kols = await mongodb.findAllKOLs();
+      const kols = await storage.findAllKOLs();
 
       if (kols.length === 0) {
         await this.bot.sendMessage(chatId, '📭 No KOLs found in the database.');
@@ -114,7 +113,7 @@ class TelegramCommands {
     if (!userId) return;
 
     try {
-      const kols = await mongodb.findAllKOLs();
+      const kols = await storage.findAllKOLs();
 
       if (kols.length === 0) {
         await this.bot.sendMessage(chatId, '📭 No KOLs found in the database.');
@@ -173,7 +172,7 @@ class TelegramCommands {
       const createdKols = await Promise.all(
         usernames.map(async (username) => {
           try {
-            return await mongodb.createKOL(username);
+            return await storage.createKOL(username);
           } catch (error) {
             console.error(`Error creating KOL ${username}: `, error);
             return null;
@@ -219,7 +218,7 @@ class TelegramCommands {
 
       await Promise.all(
         kolsToDelete.map(kol =>
-          mongodb.deleteKOL(kol._id!)
+          storage.deleteKOL(kol._id!)
         )
       );
 
