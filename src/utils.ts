@@ -48,7 +48,6 @@ async function verifyTokenWithDexscreener(
     const endpoint = `https://api.dexscreener.com/latest/dex/search/?q=${tickerOrContract}`;
     const response = await fetch(endpoint);
     const data = await response.json();
-    console.log({ data, tickerOrContract });
     // Check if token exists in DexScreener
     return data?.pairs?.[0]
   } catch (error) {
@@ -261,10 +260,16 @@ export function formatTelegramMessage(result: any) {
     return text.replace(/[-_*[\]()~`>#+=|{}.!]/g, '\\$&');
   };
 
-  // Format numbers without escaping dots
+  // Format numbers and escape dots
   const formatNum = (num: number) => {
     if (!num) return '0';
-    return formatNumber(num);
+    return escape(formatNumber(num));
+  };
+
+  // Format age without escaping
+  const formatTimeAgo = (timestamp: number) => {
+    const age = formatAge(timestamp);
+    return age.replace(/\./g, '\\.');
   };
 
   return `
@@ -280,7 +285,7 @@ ${escape(result.summary)}
 • Contract: \`${result.token_info?.address}\`
 ${result.token_info?.fdv ? `• FDV: $${formatNum(result.token_info.fdv)}` : ''}
 ${result.token_info?.volume?.h24 ? `• 24h Volume: $${formatNum(result.token_info.volume.h24)}` : ''}
-${result.token_info?.pair_created_at ? `• Age: ${formatAge(result.token_info.pair_created_at)}` : ''}
+${result.token_info?.pair_created_at ? `• Age: ${formatTimeAgo(result.token_info.pair_created_at)}` : ''}
 
 🔗 *Links*
 • [Post](${result?.post_link_url})

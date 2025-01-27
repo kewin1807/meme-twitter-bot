@@ -63,5 +63,6 @@ console.log('Telegram bot initialized');
 // Initialize bot commands()
 telegramCommands.initializeCommands();
 console.log('Bot commands registered');
+scheduler();
 
 
