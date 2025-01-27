@@ -142,12 +142,12 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
             text: `You are a crypto token detector. Depending on your crypto knowledge, analyze this tweet thoroughly: ${tweetUrl}
 and the tweet text: ${tweet.text}
 Your task:
-1. Find any token symbols, names, or contract addresses mentioned
-
+1. Find any token symbols, names, or contract addresses mentioned, Don't push any text that is not token symbols or contract addresses
+2. Summarize the tweet in a few words in English, just one sentence
 Format your response as JSON:
 {
   "token": "<token symbol or NO>",
-  "summary": "<brief description including price, market cap if found, or NO>",
+  "summary": "<brief description including price, market cap if found in English, or NO>",
   "contract": "<contract address or NO>"
 }
 
