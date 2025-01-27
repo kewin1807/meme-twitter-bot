@@ -258,7 +258,7 @@ class TelegramCommands {
       try {
         await new Promise(resolve => setTimeout(resolve, 1000));
         await this.bot.sendMessage(chatId, message, {
-          parse_mode: 'Markdown',
+          parse_mode: 'MarkdownV2',
           disable_web_page_preview: true
         });
       } catch (retryError) {
