@@ -291,7 +291,7 @@ export function formatTelegramMessage(result: any) {
   return `
 🔔 *Mentioned by [${escape(result.mentioned_by)}](https://x.com/${escape(result.mentioned_by)})*
 
-${escape(result.summary)}
+"${escape(result.summary)}"
 
 🚀 *${escape(result.token_info?.symbol)}* ${result.token_info?.fdv ? `\\[${formatNum(result.token_info.fdv)}\\]` : ''}
 ${result.token_info?.price ? `💰 Price: $${formatPrice(result.token_info.price)}` : ''}
