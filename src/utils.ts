@@ -76,7 +76,7 @@ export async function extractAndVerifyTokenFromText(text: string): Promise<TExtr
       .some(prefix => word.includes(prefix))) {
       // Skip if the word is just a number (with or without $ prefix)
       const cleanWord = word.replace('$', '');
-      if (/^\d+$/.test(cleanWord)) continue;
+      if (/^\d+([KMB])?$/i.test(cleanWord)) continue;
 
       potentialTicker = cleanWord;
       break;
@@ -132,42 +132,43 @@ function extractJSONFromString(text: string): any {
 
 export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToken> {
   try {
-    const tweetUrl = tweet.permanentUrl;
-    console.log('tweetUrl', tweetUrl);
+    // Use direct text analysis first
+
+
+    // Fallback to Grok only if needed
     const response = await client.chat.completions.create({
-      model: "grok-2-latest",
+      model: "grok-2-vision-latest",
       messages: [{
         role: "user",
         content: [
           {
             type: "text",
-            text: `You are a crypto token detector. Depending on your crypto knowledge, analyze this tweet thoroughly: ${tweetUrl}
-and the tweet text: ${tweet.text}
-Your task:
-1. Find any token symbols, names, or contract addresses mentioned, Don't push any text that is not token symbols or contract addresses
-2. Summarize the tweet in a few words in English, just one sentence
-Format your response as JSON:
-{
-  "token": "<token symbol or NO>",
-  "summary": "<brief description including price, market cap if found in English, or NO>",
-  "contract": "<contract address or NO>"
-}
+            text: `Analyze this tweet ${tweet.permanentUrl} and text: "${tweet.text}. Based on the up-to-date information on X"
 
-Examples:
-{"token": "TOSHI", "summary": "TOSHI token mentioned with price movement", "contract": "0x..."}
-{"token": "NO", "summary": "NO", "contract": "NO"}`
+Look for:
+1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", etc.)
+2. Smart contract addresses (0x... for ETH/BSC, or base58 for Solana)
+3. Token names in context of trading, launching, or price discussion
+
+Only include information explicitly stated in the tweet.
+
+Format:
+{
+  "token": "<found token symbol or NO>",
+  "summary": "<relevant quote from tweet or NO>",
+  "contract": "<found contract address or NO>"
+}`
           }
         ]
       }],
       max_tokens: 500,
-      temperature: 0.3, // Lower temperature for more focused responses
+      temperature: 0.1, // Reduced temperature for more deterministic results
     });
 
     const content = response.choices[0].message.content?.trim() || '';
-
     // Try to extract and parse JSON
     const parsedJson = extractJSONFromString(content);
-    if (parsedJson && parsedJson.token !== 'NO') {
+    if (parsedJson && (parsedJson.token !== 'NO' || parsedJson.contract !== 'NO')) {
       return { ...parsedJson, summary: tweet.text };
     } else {
       const result = await extractAndVerifyTokenFromText(tweet.text || '');
