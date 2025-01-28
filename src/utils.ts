@@ -146,7 +146,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
             text: `Analyze this tweet ${tweet.permanentUrl} and text: "${tweet.text}. Based on the up-to-date information on X"
 
 Look for:
-1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", etc.)
+1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", etc.), just get the most important one
 2. Smart contract addresses (0x... for ETH/BSC, or base58 for Solana)
 3. Token names in context of trading, launching, or price discussion
 
