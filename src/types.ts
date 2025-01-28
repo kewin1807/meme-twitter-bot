@@ -70,6 +70,7 @@ export type TFormattedResult = {
   summary?: string;
   post_link_url?: string;
   token_info?: {
+    chain?: string;
     name?: string;
     symbol?: string;
     address?: string;

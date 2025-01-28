@@ -48,8 +48,10 @@ async function verifyTokenWithDexscreener(
     const endpoint = `https://api.dexscreener.com/latest/dex/search/?q=${tickerOrContract}`;
     const response = await fetch(endpoint);
     const data = await response.json();
+    const pairs = data?.pairs || [];
+    const sortedPairs = pairs.sort((a: TPair, b: TPair) => b.fdv - a.fdv);
     // Check if token exists in DexScreener
-    return data?.pairs?.[0]
+    return sortedPairs?.[0] || null;
   } catch (error) {
     console.error('DexScreener verification failed:', error);
     return null;
@@ -166,10 +168,10 @@ Examples:
     // Try to extract and parse JSON
     const parsedJson = extractJSONFromString(content);
     if (parsedJson && parsedJson.token !== 'NO') {
-      return parsedJson;
+      return { ...parsedJson, summary: tweet.text };
     } else {
       const result = await extractAndVerifyTokenFromText(tweet.text || '');
-      return result;
+      return { ...result, summary: tweet.text };
     }
 
   } catch (error) {
@@ -207,6 +209,7 @@ export async function formatResult(result: TExtractedToken): Promise<TFormattedR
   return {
     summary: result.summary,
     token_info: {
+      chain: tokenInfo.chainId,
       name: tokenInfo.baseToken.symbol,
       symbol: tokenInfo.baseToken.symbol,
       address: tokenInfo.baseToken.address,
@@ -256,7 +259,6 @@ export function formatTelegramMessage(result: any) {
   // Escape special characters for Markdown
   const escape = (text: string) => {
     if (!text) return '';
-    // Escape special characters: _ * [ ] ( ) ~ ` > # + - = | { } . !
     return text.replace(/[-_*[\]()~`>#+=|{}.!]/g, '\\$&');
   };
 
@@ -266,31 +268,39 @@ export function formatTelegramMessage(result: any) {
     return escape(formatNumber(num));
   };
 
-  // Format age without escaping
+  // Format price with 6 decimal places
+  const formatPrice = (num: number) => {
+    if (!num) return '0';
+    return escape(num.toFixed(6));
+  };
+
   const formatTimeAgo = (timestamp: number) => {
     const age = formatAge(timestamp);
     return age.replace(/\./g, '\\.');
   };
 
-  return `
-🔔 *New Token Mention*
-👤 Mentioned by: @${result.mentioned_by}
+  // Generate GMGN link from contract address
+  const getGMGNLink = (address: string, chain: string) => {
+    if (!address) return '';
+    const prefixChain = ['sol', 'eth', 'bsc', 'base', 'tron', 'blast']
+    const prefix = prefixChain.find(prefix => chain.includes(prefix))
+    return `https://gmgn.ai/${prefix}/token/${address}`;
+  };
 
-📝 *Summary*
+  return `
+🔔 *Mentioned by [${escape(result.mentioned_by)}](https://x.com/${escape(result.mentioned_by)})*
+
 ${escape(result.summary)}
 
-🪙 *Token Info*
-• Name: ${escape(result.token_info?.name)}
-• Symbol: $${escape(result.token_info?.symbol)}
-• Contract: \`${result.token_info?.address}\`
-${result.token_info?.fdv ? `• FDV: $${formatNum(result.token_info.fdv)}` : ''}
-${result.token_info?.volume?.h24 ? `• 24h Volume: $${formatNum(result.token_info.volume.h24)}` : ''}
-${result.token_info?.pair_created_at ? `• Age: ${formatTimeAgo(result.token_info.pair_created_at)}` : ''}
+🚀 *${escape(result.token_info?.symbol)}* ${result.token_info?.fdv ? `\\[${formatNum(result.token_info.fdv)}\\]` : ''}
+${result.token_info?.price ? `💰 Price: $${formatPrice(result.token_info.price)}` : ''}
+${result.token_info?.fdv ? `💎 FDV: $${formatNum(result.token_info.fdv)}` : ''}
+${result.token_info?.volume?.h24 ? `📊 Vol: $${formatNum(result.token_info.volume.h24)}` : ''} ${result.token_info?.pair_created_at ? `🕰️ Age: ${formatTimeAgo(result.token_info.pair_created_at)}` : ''}
+${result.token_info?.address ? `📝 Contract: \`${result.token_info?.address}\`` : ''}
 
 🔗 *Links*
+💹 Chart: [DEX](${result?.token_info?.dexscreen_link}) ⋅ [GMGN](${getGMGNLink(result.token_info?.address, result.token_info?.chain)})
+• [Buy with Trojan](${result?.token_info?.trojan_link})
 • [Post](${result?.post_link_url})
-${result?.token_info?.social_link ? `• [Social](${result?.token_info?.social_link})` : ''}
-${result?.token_info?.dexscreen_link ? `• [Chart](${result?.token_info?.dexscreen_link})` : ''}
-${result?.token_info?.trojan_link ? `• [Buy Now](${result?.token_info?.trojan_link})` : ''}
 `.trim();
 }
