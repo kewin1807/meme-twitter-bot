@@ -49,9 +49,8 @@ async function verifyTokenWithDexscreener(
     const response = await fetch(endpoint);
     const data = await response.json();
     const pairs = data?.pairs || [];
-    const sortedPairs = pairs.sort((a: TPair, b: TPair) => b.fdv - a.fdv);
     // Check if token exists in DexScreener
-    return sortedPairs?.[0] || null;
+    return pairs?.[0] || null;
   } catch (error) {
     console.error('DexScreener verification failed:', error);
     return null;
@@ -143,8 +142,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
         content: [
           {
             type: "text",
-            text: `Analyze this tweet ${tweet.permanentUrl} and text: "${tweet.text}. Based on the up-to-date information on X"
-
+            text: `Assume that you are crypto analyst. Analyze this tweet ${tweet.permanentUrl} and text: "${tweet.text}. Based on the information on twitter"
 Look for:
 1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", etc.), just get the most important one
 2. Smart contract addresses (0x... for ETH/BSC, or base58 for Solana)
