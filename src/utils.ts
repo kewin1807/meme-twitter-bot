@@ -142,7 +142,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
   Text: "${tweet.text}"  
   
   Look for:
-  1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", "#", "TICKER", "SYMBOL", "TICKER:" etc.)
+  1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", "#", "TICKER", "SYMBOL", "TICKER:" etc.). If we have many responses, choose the most relevant one.
   2. Smart contract addresses (0x... for ETH/BSC, or base58 for Solana)
   3. Token names in the context of trading, launching, or price discussion
   4. Any token information shown in the image (charts, prices, addresses)  
@@ -179,6 +179,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
 
 
     const content = response.choices[0].message.content?.trim() || '';
+    console.log(content);
     // Try to extract and parse JSON
     const parsedJson = extractJSONFromString(content);
     if (parsedJson && (parsedJson.token !== 'NO' || parsedJson.contract !== 'NO')) {
