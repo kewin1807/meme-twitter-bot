@@ -216,6 +216,7 @@ export async function formatResult(result: TExtractedToken): Promise<TFormattedR
         address: result.contract,
         social_link: '',
         fdv: 0,
+        liquidity: 0,
       }
     };
   }
@@ -230,6 +231,7 @@ export async function formatResult(result: TExtractedToken): Promise<TFormattedR
       social_link: tokenInfo.info?.socials?.[0]?.url,
       fdv: tokenInfo.fdv,
       volume: tokenInfo.volume,
+      liquidity: tokenInfo.liquidity.usd,
       pair_created_at: tokenInfo.pairCreatedAt,
       dexscreen_link: tokenInfo.url,
       trojan_link: `https://t.me/solana_trojanbot?start=r-kewin1807-${tokenInfo.baseToken.address}`,
@@ -309,6 +311,7 @@ export function formatTelegramMessage(result: any) {
 🚀 *${escape(result.token_info?.symbol)}* ${result.token_info?.fdv ? `\\[${formatNum(result.token_info.fdv)}\\]` : ''}
 ${result.token_info?.price ? `💰 Price: $${formatPrice(result.token_info.price)}` : ''}
 ${result.token_info?.fdv ? `💎 FDV: $${formatNum(result.token_info.fdv)}` : ''}
+${result.token_info?.liquidity ? `💎 Liquidity: $${formatNum(result.token_info.liquidity)}` : ''}
 ${result.token_info?.volume?.h24 ? `📊 Vol: $${formatNum(result.token_info.volume.h24)}` : ''} ${result.token_info?.pair_created_at ? `🕰️ Age: ${formatTimeAgo(result.token_info.pair_created_at)}` : ''}
 ${result.token_info?.address ? `📝 Contract: \`${result.token_info?.address}\`` : ''}
 

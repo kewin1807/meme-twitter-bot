@@ -80,5 +80,6 @@ export type TFormattedResult = {
     pair_created_at?: number;
     dexscreen_link?: string;
     trojan_link?: string;
+    liquidity?: number;
   };
 }
