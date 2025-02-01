@@ -1,6 +1,7 @@
 import { Tweet } from "agent-twitter-client";
 import OpenAI from "openai";
 import { TExtractedToken, TFormattedResult, TPair } from "./types";
+import { ChatCompletionContentPart, ChatCompletionMessageParam, ChatCompletionUserMessageParam } from "openai/resources";
 
 export const client = new OpenAI({
   apiKey: process.env.XAI_API_KEY || '',
@@ -131,37 +132,51 @@ function extractJSONFromString(text: string): any {
 
 export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToken> {
   try {
-    // Use direct text analysis first
-
-
-    // Fallback to Grok only if needed
-    const response = await client.chat.completions.create({
-      model: "grok-2-vision-latest",
-      messages: [{
+    // Check if tweet has photos first
+    const messages: ChatCompletionUserMessageParam[] = [
+      {
         role: "user",
         content: [
           {
-            type: "text",
-            text: `Assume that you are crypto analyst. Analyze this tweet ${tweet.permanentUrl} and text: "${tweet.text}. Based on the information on twitter"
-Look for:
-1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", etc.), just get the most important one
-2. Smart contract addresses (0x... for ETH/BSC, or base58 for Solana)
-3. Token names in context of trading, launching, or price discussion
-
-Only include information explicitly stated in the tweet.
-
-Format:
-{
-  "token": "<found token symbol or NO>",
-  "summary": "<relevant quote from tweet or NO>",
-  "contract": "<found contract address or NO>"
-}`
-          }
+            type: "text", text: `Analyze this tweet ${tweet.permanentUrl} and its image.  
+  Text: "${tweet.text}"  
+  
+  Look for:
+  1. Cryptocurrency token symbols (prefixed with $ or followed by "token", "coin", "#", "TICKER", "SYMBOL", "TICKER:" etc.)
+  2. Smart contract addresses (0x... for ETH/BSC, or base58 for Solana)
+  3. Token names in the context of trading, launching, or price discussion
+  4. Any token information shown in the image (charts, prices, addresses)  
+  
+  If no token or contract is found, return all fields as "NO".  
+  
+  Format your response as JSON:
+  {
+    "token": "<found token symbol or NO>",
+    "summary": "<relevant quote from tweet or NO>",
+    "contract": "<found contract address or NO>"
+  }` }
         ]
-      }],
+      }
+    ];
+
+    // If there are images in the tweet, add them to messages
+    if (tweet.photos?.length > 0) {
+      const photoUrl = tweet.photos[0];
+      (messages[0].content as ChatCompletionContentPart[]).push({
+        type: "image_url",
+        image_url: { url: photoUrl.url, detail: "high" }
+      });
+
+    }
+
+    // Send request to OpenAI API
+    const response = await client.chat.completions.create({
+      model: "grok-2-vision-latest", // Or use "grok-2-vision-latest"
+      messages: messages as ChatCompletionUserMessageParam[],
       max_tokens: 500,
-      temperature: 0.1, // Reduced temperature for more deterministic results
+      temperature: 0.1,
     });
+
 
     const content = response.choices[0].message.content?.trim() || '';
     // Try to extract and parse JSON
