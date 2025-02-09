@@ -1,0 +1,18 @@
+export const NATIVE_COIN_TICKER = [
+  "BTC",
+  "ETH",
+  "USDT",
+  "USDC",
+  "BNB",
+  "SOL",
+  "XRP",
+  "ADA",
+  "DOGE",
+  "SHIB",
+  "XLM",
+  "LINK",
+  "ATOM",
+  "ETC",
+  "XMR",
+  "ZEC",
+]

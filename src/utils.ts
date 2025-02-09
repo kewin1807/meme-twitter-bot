@@ -2,6 +2,7 @@ import { Tweet } from "agent-twitter-client";
 import OpenAI from "openai";
 import { TExtractedToken, TFormattedResult, TPair } from "./types";
 import { ChatCompletionContentPart, ChatCompletionMessageParam, ChatCompletionUserMessageParam } from "openai/resources";
+import { NATIVE_COIN_TICKER } from "./constants";
 
 export const client = new OpenAI({
   apiKey: process.env.XAI_API_KEY || '',
@@ -174,7 +175,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
       model: "grok-2-vision-latest", // Or use "grok-2-vision-latest"
       messages: messages as ChatCompletionUserMessageParam[],
       max_tokens: 500,
-      temperature: 0.1,
+      temperature: 0.3,
     });
 
 
@@ -203,11 +204,11 @@ export async function formatResult(result: TExtractedToken): Promise<TFormattedR
   if (!result.token && !result.contract) {
     return null;
   }
-  if (result.token === 'NO' && result.contract === 'NO') {
+  if ((result.token === 'NO' || (result.token && NATIVE_COIN_TICKER.includes(result.token?.toUpperCase()))) && result.contract === 'NO') {
     return null;
   }
 
-  const tokenInfo = await verifyTokenWithDexscreener(result.token?.replace('$', '') || result.contract || '');
+  const tokenInfo = await verifyTokenWithDexscreener(result.contract || result.token?.replace('$', '') || '');
   if (!tokenInfo) {
     return {
       summary: result.summary,
