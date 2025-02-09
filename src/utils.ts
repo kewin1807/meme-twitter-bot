@@ -175,7 +175,7 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
       model: "grok-2-vision-latest", // Or use "grok-2-vision-latest"
       messages: messages as ChatCompletionUserMessageParam[],
       max_tokens: 500,
-      temperature: 0.3,
+      temperature: 0.1,
     });
 
 
@@ -183,7 +183,13 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
     console.log(content);
     // Try to extract and parse JSON
     const parsedJson = extractJSONFromString(content);
-    if (parsedJson && (parsedJson.token !== 'NO' || parsedJson.contract !== 'NO')) {
+    if (parsedJson) {
+      if (parsedJson.contract === 'NO') {
+        parsedJson.contract = ''
+      }
+      if (parsedJson.token === 'NO' || (parsedJson.token && NATIVE_COIN_TICKER.includes(parsedJson.token?.toUpperCase()))) {
+        parsedJson.token = ''
+      }
       return { ...parsedJson, summary: tweet.text };
     } else {
       const result = await extractAndVerifyTokenFromText(tweet.text || '');
@@ -201,12 +207,11 @@ export async function extractTweetFromGrok(tweet: Tweet): Promise<TExtractedToke
 }
 
 export async function formatResult(result: TExtractedToken): Promise<TFormattedResult | null> {
+
   if (!result.token && !result.contract) {
     return null;
   }
-  if ((result.token === 'NO' || (result.token && NATIVE_COIN_TICKER.includes(result.token?.toUpperCase()))) && result.contract === 'NO') {
-    return null;
-  }
+
 
   const tokenInfo = await verifyTokenWithDexscreener(result.contract || result.token?.replace('$', '') || '');
   if (!tokenInfo) {
